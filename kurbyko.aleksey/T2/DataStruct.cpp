@@ -20,7 +20,7 @@ namespace kurbyko
       n /= 2;
     }
 
-    return result;
+    return "0" + result;
   }
 
   unsigned long long binaryStringToULL(const std::string& str)
