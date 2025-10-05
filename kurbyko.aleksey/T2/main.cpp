@@ -2,7 +2,7 @@
 
 int main()
 {
-  using dStruct::DataStruct;
+  using kurbyko::DataStruct;
 
   std::vector< DataStruct > data;
   while (!std::cin.eof())
