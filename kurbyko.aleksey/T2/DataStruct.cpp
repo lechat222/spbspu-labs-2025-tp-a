@@ -1,18 +1,66 @@
 #include "DataStruct.hpp"
 #include <algorithm>
+#include <stdexcept>
 
-namespace dStruct
+namespace kurbyko
 {
+  std::string ullToBinaryString(unsigned long long value)
+  {
+    if (value == 0)
+    {
+      return "0";
+    }
+
+    std::string result;
+    unsigned long long n = value;
+
+    while (n > 0)
+    {
+      result = (n % 2 ? '1' : '0') + result;
+      n /= 2;
+    }
+
+    return result;
+  }
+
+  unsigned long long binaryStringToULL(const std::string& str)
+  {
+    if (str.empty())
+    {
+      return 0;
+    }
+
+    unsigned long long result = 0;
+    unsigned long long power = 1;
+
+    for (int i = str.length() - 1; i >= 0; --i)
+    {
+      char c = str[i];
+      if (c == '1')
+      {
+        result += power;
+      }
+      else if (c != '0')
+      {
+        throw std::invalid_argument("Invalid binary string");
+      }
+      power *= 2;
+    }
+    return result;
+  }
 
   bool DataStruct::operator<(const DataStruct& other) const
   {
     if (key1 == other.key1)
     {
-      if (std::abs(key2) == std::abs(other.key2))
+      unsigned char uc1 = static_cast<unsigned char>(key2);
+      unsigned char uc2 = static_cast<unsigned char>(other.key2);
+
+      if (uc1 == uc2)
       {
         return key3.size() < other.key3.size();
       }
-      return std::abs(key2) < std::abs(other.key2);
+      return uc1 < uc2;
     }
     return key1 < other.key1;
   }
@@ -33,13 +81,6 @@ namespace dStruct
     return in;
   }
 
-  std::string convertIntoBinNumber(unsigned long long value)
-  {
-    std::bitset< 64 > bin(value);
-    std::string binString = bin.to_string();
-    return "0" + binString.erase(0, binString.find('1'));
-  }
-
   std::ostream& operator<<(std::ostream& out, const DataStruct& value)
   {
     std::ostream::sentry sentry(out);
@@ -49,7 +90,7 @@ namespace dStruct
     }
     iofmtguard fmtguard(out);
 
-    out << "(:key1 0b" << convertIntoBinNumber(value.key1);
+    out << "(:key1 0b" << ullToBinaryString(value.key1);
     out << ":key2 \'" << value.key2 << "\'";
     out << ":key3 \"" << value.key3 << "\":)";
 
@@ -62,22 +103,62 @@ namespace dStruct
     if (!sentry)
     {
       in.setstate(std::ios::failbit);
+      return in;
     }
-    std::bitset< 64 > bin;
-    in >> StringIO{ "0b" } >> bin;
+
+    in >> StringIO{ "0b" };
+    if (!in)
+    {
+      return in;
+    }
+
+    std::string binaryStr;
+    char c;
+
+    if (!in.get(c))
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+
+    if (c != '0' && c != '1')
+    {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+
+    binaryStr += c;
+
+    while (in.get(c) && (c == '0' || c == '1'))
+    {
+      binaryStr += c;
+    }
+
     if (in)
     {
-      key.value = bin.to_ulong();
+      in.unget();
     }
+
+    try
+    {
+      key.value = binaryStringToULL(binaryStr);
+    }
+    catch (const std::exception&)
+    {
+      in.setstate(std::ios::failbit);
+    }
+
     return in;
   }
 
+
   std::istream& operator>>(std::istream& in, CharI&& ch)
   {
-    std::istream::sentry guard(in);
-    if (!guard)
+    std::istream::sentry sentry(in);
+    if (!sentry)
     {
       in.setstate(std::ios::failbit);
+      return in;
     }
 
     in >> DelimiterIO{ '\'' } >> ch.value >> DelimiterIO{ '\'' };
@@ -91,6 +172,7 @@ namespace dStruct
     if (!sentry)
     {
       in.setstate(std::ios::failbit);
+      return in;
     }
     std::string tmp{};
     std::getline(in >> DelimiterIO{ '"' }, tmp, '"');
@@ -176,7 +258,7 @@ namespace dStruct
     return in;
   }
 
-  iofmtguard::iofmtguard(std::basic_ios< char >& s):
+  iofmtguard::iofmtguard(std::basic_ios< char >& s) :
     s_(s),
     width_(s.width()),
     fill_(s.fill()),

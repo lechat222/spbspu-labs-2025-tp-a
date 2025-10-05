@@ -8,9 +8,8 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
-#include <bitset>
 
-namespace dStruct
+namespace kurbyko
 {
   struct DataStruct
   {
@@ -58,6 +57,9 @@ namespace dStruct
     std::basic_ios< char >::fmtflags fmt_;
   };
 
+  std::string ullToBinaryString(unsigned long long value);
+  unsigned long long binaryStringToULL(const std::string& str);
+
   std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
   std::istream& operator>>(std::istream& in, ULLBinary&& key);
   std::istream& operator>>(std::istream& in, CharI&& key);
@@ -65,7 +67,6 @@ namespace dStruct
   std::istream& operator>>(std::istream& in, const StringIO&& dest);
   std::istream& operator>>(std::istream& in, DataStruct& dest);
   std::ostream& operator<<(std::ostream& out, const DataStruct& dest);
-
 }
 
 #endif
