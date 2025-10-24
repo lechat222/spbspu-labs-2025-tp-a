@@ -124,7 +124,7 @@ void kurbyko::area(const std::vector< Polygon >& polygons, std::istream& in, std
   in >> subcommand;
   iofmtguard guard(out);
   out << std::fixed << std::setprecision(1);
-    using namespace std::placeholders;
+  using namespace std::placeholders;
   using Predicate = std::function< bool(const Polygon&) >;
 
   std::map< std::string, std::function< double(const std::vector<Polygon>&) > > subcmds;
