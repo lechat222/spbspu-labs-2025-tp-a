@@ -81,19 +81,19 @@ namespace
     return std::is_permutation(polygon1.points.begin(), polygon1.points.end(), polygon2.points.begin());
   }
 
-  struct MaxSeqCalculator 
+  struct MaxSeqCalculator
   {
     const Polygon& target;
-    std::pair<size_t, size_t> operator()(std::pair<size_t, size_t> acc, const Polygon& poly) const 
+    std::pair<size_t, size_t> operator()(std::pair<size_t, size_t> acc, const Polygon& poly) const
     {
       size_t current = acc.first;
       size_t max = acc.second;
-      if (poly == target) 
+      if (poly == target)
       {
         current++;
         max = std::max(max, current);
       }
-      else 
+      else
       {
         current = 0;
       }
