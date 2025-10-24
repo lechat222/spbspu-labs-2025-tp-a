@@ -12,7 +12,7 @@
 namespace
 {
   using namespace kurbyko;
-  
+
   struct TranslationUniquenessChecker
   {
     const std::string& translation;
