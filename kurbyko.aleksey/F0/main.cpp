@@ -12,6 +12,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  setlocale(LC_ALL, "Russian");
   using namespace kurbyko;
 
   dictionaries dictOfDicts;
@@ -68,7 +69,6 @@ int main(int argc, char** argv)
   commands["mask_search"] = mask_search;
   commands["quiz"] = quiz;
 
-  // Use loop for command input (allowed in main)
   std::string cmd;
   while (std::cin >> cmd)
   {
