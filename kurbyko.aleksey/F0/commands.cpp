@@ -118,11 +118,9 @@ namespace
     std::ostream& out;
     const Dictionary& dict;
     size_t options;
-    int& correct;
-    int& incorrect;
 
-    QuizAccumulator(std::istream& i, std::ostream& o, const Dictionary& d, size_t opt, int& corr, int& incorr)
-      : in(i), out(o), dict(d), options(opt), correct(corr), incorrect(incorr) {}
+    QuizAccumulator(std::istream& i, std::ostream& o, const Dictionary& d, size_t opt)
+      : in(i), out(o), dict(d), options(opt) {}
 
     std::pair<int, int> operator()(std::pair<int, int> counts, const std::pair<std::string, std::string>& question) const
     {
@@ -534,13 +532,10 @@ void kurbyko::quiz(dictionaries& dicts, std::istream& in, std::ostream& out)
     return;
   }
 
-  int correct = 0;
-  int incorrect = 0;
+  auto result = std::accumulate(quizWords.begin(), quizWords.end(),
+    std::make_pair(0, 0),
+    QuizAccumulator(in, out, dict, static_cast<size_t>(options)));
 
-  std::accumulate(quizWords.begin(), quizWords.end(),
-    std::make_pair(correct, incorrect),
-    QuizAccumulator(in, out, dict, static_cast<size_t>(options), correct, incorrect));
-
-  out << "Correct: " << correct << "\n";
-  out << "Incorrect: " << incorrect << "\n";
+  out << "Correct: " << result.first << "\n";
+  out << "Incorrect: " << result.second << "\n";
 }
