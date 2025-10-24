@@ -27,9 +27,9 @@ namespace
   struct OptionsSetAccumulator
   {
     const std::string& correctAnswer;
-    int options;
+    size_t options;
 
-    OptionsSetAccumulator(const std::string& answer, int opt)
+    OptionsSetAccumulator(const std::string& answer, size_t opt)
       : correctAnswer(answer), options(opt) {}
 
     std::set<std::string>* operator()(std::set<std::string>* set, const std::string& translation) const
@@ -50,7 +50,8 @@ namespace
 
     std::string operator()(const std::string& option) const
     {
-      size_t index = std::distance(&optionsVec[0], &option) + 1;
+      auto it = std::find(optionsVec.begin(), optionsVec.end(), option);
+      size_t index = std::distance(optionsVec.begin(), it) + 1;
       return std::to_string(index) + ". " + option;
     }
   };
@@ -116,11 +117,11 @@ namespace
     std::istream& in;
     std::ostream& out;
     const Dictionary& dict;
-    int options;
+    size_t options;
     int& correct;
     int& incorrect;
 
-    QuizAccumulator(std::istream& i, std::ostream& o, const Dictionary& d, int opt, int& corr, int& incorr)
+    QuizAccumulator(std::istream& i, std::ostream& o, const Dictionary& d, size_t opt, int& corr, int& incorr)
       : in(i), out(o), dict(d), options(opt), correct(corr), incorrect(incorr) {}
 
     std::pair<int, int> operator()(std::pair<int, int> counts, const std::pair<std::string, std::string>& question) const
@@ -147,7 +148,8 @@ namespace
       int userChoice;
       in >> userChoice;
 
-      if (userChoice > 0 && userChoice <= optionsVec.size() && optionsVec[userChoice - 1] == correctAnswer)
+      if (userChoice > 0 && static_cast<size_t>(userChoice) <= optionsVec.size() &&
+        optionsVec[static_cast<size_t>(userChoice) - 1] == correctAnswer)
       {
         out << "Correct!\n";
         counts.first++;
@@ -498,8 +500,13 @@ void kurbyko::quiz(dictionaries& dicts, std::istream& in, std::ostream& out)
   int questions, options;
   in >> name >> questions >> options;
 
+  if (questions <= 0 || options <= 1)
+  {
+    throw std::logic_error("<INVALID COMMAND>");
+  }
+
   auto it = std::find_if(dicts.begin(), dicts.end(), DictionaryFinder(name));
-  if (it == dicts.end() || questions <= 0 || options <= 1)
+  if (it == dicts.end())
   {
     throw std::logic_error("<INVALID COMMAND>");
   }
@@ -511,14 +518,16 @@ void kurbyko::quiz(dictionaries& dicts, std::istream& in, std::ostream& out)
     return;
   }
 
-  int availableWords = dict.size();
-  if (availableWords < questions)
+  size_t availableWords = dict.size();
+  size_t questionsCount = static_cast<size_t>(questions);
+
+  if (availableWords < questionsCount)
   {
     out << "Warning: only " << availableWords << " words available, quiz will use all of them\n";
-    questions = availableWords;
+    questionsCount = availableWords;
   }
 
-  auto quizWords = dict.getQuizOptions(questions);
+  auto quizWords = dict.getQuizOptions(static_cast<int>(questionsCount));
   if (quizWords.empty())
   {
     out << "<EMPTY>\n";
@@ -530,7 +539,7 @@ void kurbyko::quiz(dictionaries& dicts, std::istream& in, std::ostream& out)
 
   std::accumulate(quizWords.begin(), quizWords.end(),
     std::make_pair(correct, incorrect),
-    QuizAccumulator(in, out, dict, options, correct, incorrect));
+    QuizAccumulator(in, out, dict, static_cast<size_t>(options), correct, incorrect));
 
   out << "Correct: " << correct << "\n";
   out << "Incorrect: " << incorrect << "\n";

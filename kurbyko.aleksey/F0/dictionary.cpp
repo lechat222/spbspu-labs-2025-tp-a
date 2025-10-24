@@ -118,10 +118,10 @@ struct FileWriter
 {
   std::ofstream* operator()(std::ofstream* file,
     const std::pair<std::string, std::string>& pair) const
-  {
-    *file << pair.first << ":" << pair.second << "\n";
-    return file;
-  }
+    {
+      *file << pair.first << ":" << pair.second << "\n";
+      return file;
+    }
 };
 
 struct WordPairTransformer
@@ -206,13 +206,14 @@ namespace kurbyko
       return result;
     }
 
-    if (count > words.size())
+    size_t wordCount = static_cast<size_t>(count);
+    if (wordCount > words.size())
     {
-      count = words.size();
+      wordCount = words.size();
     }
 
-    result.resize(count);
-    std::transform(words.begin(), words.begin() + count, result.begin(),
+    result.resize(wordCount);
+    std::transform(words.begin(), words.begin() + static_cast<std::ptrdiff_t>(wordCount), result.begin(),
       WordPairTransformer(*this));
 
     return result;
